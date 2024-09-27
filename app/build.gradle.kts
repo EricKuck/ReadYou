@@ -51,16 +51,16 @@ android {
 
     flavorDimensions.add("channel")
     productFlavors {
-        create("github") {
-            dimension = "channel"
-        }
+//        create("github") {
+//            dimension = "channel"
+//        }
         create("fdroid") {
             dimension = "channel"
         }
-        create("googlePlay") {
-            dimension = "channel"
-            applicationIdSuffix = ".google.play"
-        }
+//        create("googlePlay") {
+//            dimension = "channel"
+//            applicationIdSuffix = ".google.play"
+//        }
     }
     signingConfigs {
         create("release") {
@@ -131,6 +131,7 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     androidTestImplementation(libs.compose.ui.test.junit4)
     implementation(libs.compose.material3)
+    implementation(libs.compose.webview)
 
     // Accompanist
     implementation(libs.accompanist.swiperefresh)

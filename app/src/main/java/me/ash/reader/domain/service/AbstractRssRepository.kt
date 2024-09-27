@@ -3,6 +3,7 @@ package me.ash.reader.domain.service
 import android.content.Context
 import android.util.Log
 import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkManager
@@ -208,6 +209,10 @@ abstract class AbstractRssRepository(
         SyncWorker.enqueueOneTimeWork(workManager)
     }
 
+    fun setLastSyncDate() {
+        lastSyncDate = Date()
+    }
+
     suspend fun doSync(isOnStart: Boolean = false) {
         workManager.cancelAllWork()
         accountDao.queryById(context.currentAccountId)?.let {
@@ -247,29 +252,30 @@ abstract class AbstractRssRepository(
         groupId: String?,
         feedId: String?,
         isStarred: Boolean,
-        isUnread: Boolean,
+        readAfter: Date?,
     ): PagingSource<Int, ArticleWithFeed> {
         val accountId = context.currentAccountId
         Log.i(
             "RLog",
-            "pullArticles: accountId: ${accountId}, groupId: ${groupId}, feedId: ${feedId}, isStarred: ${isStarred}, isUnread: ${isUnread}"
+            "pullArticles: accountId: ${accountId}, groupId: ${groupId}, feedId: ${feedId}, isStarred: ${isStarred}, readAfter: ${readAfter}"
         )
+
         return when {
             groupId != null -> when {
                 isStarred -> articleDao.queryArticleWithFeedByGroupIdWhenIsStarred(accountId, groupId, true)
-                isUnread -> articleDao.queryArticleWithFeedByGroupIdWhenIsUnread(accountId, groupId, true)
+                readAfter != null -> articleDao.queryArticleWithFeedByGroupIdWhenIsUnread(accountId, groupId, readAfter)
                 else -> articleDao.queryArticleWithFeedByGroupIdWhenIsAll(accountId, groupId)
             }
 
             feedId != null -> when {
                 isStarred -> articleDao.queryArticleWithFeedByFeedIdWhenIsStarred(accountId, feedId, true)
-                isUnread -> articleDao.queryArticleWithFeedByFeedIdWhenIsUnread(accountId, feedId, true)
+                readAfter != null -> articleDao.queryArticleWithFeedByFeedIdWhenIsUnread(accountId, feedId, readAfter)
                 else -> articleDao.queryArticleWithFeedByFeedIdWhenIsAll(accountId, feedId)
             }
 
             else -> when {
                 isStarred -> articleDao.queryArticleWithFeedWhenIsStarred(accountId, true)
-                isUnread -> articleDao.queryArticleWithFeedWhenIsUnread(accountId, true)
+                readAfter != null -> articleDao.queryArticleWithFeedWhenIsUnread(accountId, readAfter)
                 else -> articleDao.queryArticleWithFeedWhenIsAll(accountId)
             }
         }
@@ -405,5 +411,10 @@ abstract class AbstractRssRepository(
                 else -> articleDao.searchArticleWhenAll(accountId, content)
             }
         }
+    }
+
+    companion object {
+        var lastSyncDate: Date? = null
+            private set
     }
 }

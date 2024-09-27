@@ -19,7 +19,7 @@ import java.util.*
 
 @Database(
     entities = [Account::class, Feed::class, Article::class, Group::class],
-    version = 5
+    version = 6
 )
 @TypeConverters(
     AndroidDatabase.DateConverters::class,
@@ -74,7 +74,8 @@ val allMigrations = arrayOf(
     MIGRATION_2_3,
     MIGRATION_3_4,
     MIGRATION_4_5,
-)
+    MIGRATION_5_6,
+  )
 
 @Suppress("ClassName")
 object MIGRATION_1_2 : Migration(1, 2) {
@@ -152,4 +153,16 @@ object MIGRATION_4_5 : Migration(4, 5) {
             """.trimIndent()
         )
     }
+}
+
+@Suppress("ClassName")
+object MIGRATION_5_6 : Migration(5, 6) {
+
+  override fun migrate(database: SupportSQLiteDatabase) {
+    database.execSQL(
+      """
+            ALTER TABLE article ADD COLUMN readAt INTEGER DEFAULT NULL
+            """.trimIndent()
+    )
+  }
 }

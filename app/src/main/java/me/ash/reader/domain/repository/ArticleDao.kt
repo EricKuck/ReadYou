@@ -33,7 +33,7 @@ interface ArticleDao {
 
     @Query(
         """
-        UPDATE article SET isUnread = :isUnread 
+        UPDATE article SET isUnread = :isUnread, readAt = :readAt
         WHERE accountId = :accountId
         AND id in (:ids)
         """
@@ -42,6 +42,7 @@ interface ArticleDao {
         accountId: Int,
         ids: Set<String>,
         isUnread: Boolean,
+        readAt: Date? = if (isUnread) null else Date(),
     ): Int
 
     @Transaction
@@ -341,7 +342,7 @@ interface ArticleDao {
     @Transaction
     @Query(
         """
-        UPDATE article SET isUnread = :isUnread 
+        UPDATE article SET isUnread = :isUnread, readAt = :readAt
         WHERE id = :articleId
         AND accountId = :accountId
         """
@@ -350,6 +351,7 @@ interface ArticleDao {
         accountId: Int,
         articleId: String,
         isUnread: Boolean,
+        readAt: Date? = (if (isUnread) null else Date())?.also { println("MARKING AS READ AT $it") },
     )
 
     @Query(
@@ -473,14 +475,14 @@ interface ArticleDao {
     @Query(
         """
         SELECT * FROM article 
-        WHERE isUnread = :isUnread 
+        WHERE isUnread OR readAt > :readAfter
         AND accountId = :accountId
         ORDER BY date DESC
         """
     )
     fun queryArticleWithFeedWhenIsUnread(
         accountId: Int,
-        isUnread: Boolean,
+        readAfter: Date,
     ): PagingSource<Int, ArticleWithFeed>
 
     @Transaction
@@ -536,7 +538,7 @@ interface ArticleDao {
         LEFT JOIN feed AS b ON b.id = a.feedId
         LEFT JOIN `group` AS c ON c.id = b.groupId
         WHERE c.id = :groupId
-        AND a.isUnread = :isUnread
+        AND isUnread OR readAt > :readAfter
         AND a.accountId = :accountId
         ORDER BY a.date DESC
         """
@@ -544,7 +546,7 @@ interface ArticleDao {
     fun queryArticleWithFeedByGroupIdWhenIsUnread(
         accountId: Int,
         groupId: String,
-        isUnread: Boolean,
+        readAfter: Date,
     ): PagingSource<Int, ArticleWithFeed>
 
     @Transaction
@@ -582,7 +584,7 @@ interface ArticleDao {
         """
         SELECT * FROM article 
         WHERE feedId = :feedId 
-        AND isUnread = :isUnread
+        AND isUnread OR readAt > :readAfter
         AND accountId = :accountId
         ORDER BY date DESC
         """
@@ -590,7 +592,7 @@ interface ArticleDao {
     fun queryArticleWithFeedByFeedIdWhenIsUnread(
         accountId: Int,
         feedId: String,
-        isUnread: Boolean,
+        readAfter: Date,
     ): PagingSource<Int, ArticleWithFeed>
 
     @RewriteQueriesToDropUnusedColumns

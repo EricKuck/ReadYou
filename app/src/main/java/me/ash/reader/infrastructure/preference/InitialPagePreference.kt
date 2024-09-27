@@ -34,7 +34,7 @@ sealed class InitialPagePreference(val value: Int) : Preference() {
 
     companion object {
 
-        val default = FeedsPage
+        val default = FlowPage
         val values = listOf(FeedsPage, FlowPage)
 
         fun fromPreferences(preferences: Preferences) =

@@ -43,6 +43,8 @@ data class Article(
     @ColumnInfo
     var isUnread: Boolean = true,
     @ColumnInfo
+    var readAt: Date? = null,
+    @ColumnInfo
     var isStarred: Boolean = false,
     @ColumnInfo
     var isReadLater: Boolean = false,

@@ -22,11 +22,13 @@ import me.ash.reader.domain.model.article.mapPagingFlowItem
 import me.ash.reader.domain.model.feed.Feed
 import me.ash.reader.domain.model.general.Filter
 import me.ash.reader.domain.model.group.Group
+import me.ash.reader.domain.service.AbstractRssRepository
 import me.ash.reader.domain.service.RssService
 import me.ash.reader.domain.service.SyncWorker
 import me.ash.reader.infrastructure.android.AndroidStringsHelper
 import me.ash.reader.infrastructure.di.ApplicationScope
 import me.ash.reader.infrastructure.di.IODispatcher
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,6 +50,8 @@ class HomeViewModel @Inject constructor(
 
     val syncWorkLiveData = workManager.getWorkInfosByTagLiveData(SyncWorker.WORK_NAME)
 
+    private var pullDate = Date()
+
     fun sync() {
         applicationScope.launch(ioDispatcher) {
             rssService.get().doSync()
@@ -66,6 +70,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun fetchArticles() {
+        // TODO: how to handle pull to refresh?
+        pullDate = Date()
+        println("fetch articles at $pullDate")
+
         _homeUiState.update {
             it.copy(
                 pagingData = Pager(
@@ -74,6 +82,11 @@ class HomeViewModel @Inject constructor(
                         enablePlaceholders = false,
                     )
                 ) {
+                    val lastSyncDate = AbstractRssRepository.lastSyncDate
+                    if (lastSyncDate != null && lastSyncDate > pullDate) {
+                        pullDate = Date()
+                    }
+
                     if (_homeUiState.value.searchContent.isNotBlank()) {
                         rssService.get().searchArticles(
                             content = _homeUiState.value.searchContent.trim(),
@@ -87,7 +100,7 @@ class HomeViewModel @Inject constructor(
                             groupId = _filterUiState.value.group?.id,
                             feedId = _filterUiState.value.feed?.id,
                             isStarred = _filterUiState.value.filter.isStarred(),
-                            isUnread = _filterUiState.value.filter.isUnread(),
+                            readAfter = if (_filterUiState.value.filter.isUnread()) pullDate else null,
                         )
                     }
                 }.flow.map {
