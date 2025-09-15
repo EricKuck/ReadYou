@@ -362,7 +362,7 @@ private fun WebViewArticle(
             navigator = navigator,
             onCreated = { webView ->
                 webView.setBackgroundColor(ViewColor.argb(1, 0, 0, 0));
-                webView.settings.javaScriptEnabled = true
+                webView.settings.javaScriptEnabled = state.content.getCurrentUrl()?.contains("theverge.com") != true
             }
         )
 

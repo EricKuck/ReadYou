@@ -3,7 +3,6 @@ package me.ash.reader.ui.component.webview
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 
@@ -15,12 +14,6 @@ object WebViewLayout {
         webViewClient: WebViewClient,
         onImageClick: ((imgUrl: String, altText: String) -> Unit)? = null,
     ) = WebView(context).apply {
-        with (CookieManager.getInstance()) {
-            setAcceptCookie(false)
-            if (hasCookies()) {
-                removeAllCookies(null)
-            }
-        }
         this.webViewClient = webViewClient
         scrollBarSize = 0
         isHorizontalScrollBarEnabled = false

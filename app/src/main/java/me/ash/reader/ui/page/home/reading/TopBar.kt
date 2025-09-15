@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.WebStories
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +23,9 @@ import androidx.navigation.NavHostController
 import me.ash.reader.R
 import me.ash.reader.infrastructure.preference.LocalReadingPageTonalElevation
 import me.ash.reader.infrastructure.preference.LocalSharedContent
+import me.ash.reader.infrastructure.preference.OpenLinkPreference
 import me.ash.reader.ui.component.base.FeedbackIconButton
+import me.ash.reader.ui.ext.openURL
 import me.ash.reader.ui.ext.surfaceColorAtElevation
 import me.ash.reader.ui.page.common.RouteName
 
@@ -67,6 +70,21 @@ fun TopBar(
                   launchSingleTop = true
                 }
               }
+            }
+          }
+
+          FeedbackIconButton(
+            modifier = Modifier.size(22.dp),
+            imageVector = Icons.Outlined.WebStories,
+            contentDescription = "Internet Archive",
+            tint = MaterialTheme.colorScheme.onSurface
+          ) {
+            context.openURL(
+              url = "https://web.archive.org/web/${link!!}",
+              openLink = OpenLinkPreference.AutoPreferDefaultBrowser,
+            )
+            navController.navigate(RouteName.READING_PAGE_STYLE) {
+              launchSingleTop = true
             }
           }
 
